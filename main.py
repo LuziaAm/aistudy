@@ -4,6 +4,8 @@ from googletrans import Translator
 from gtts import gTTS
 from pydub import AudioSegment
 import whisper
+from tortoise.api import TextToSpeech
+from tortoise.utils.audio import load_audio, load_voice
 
 
 def transcrever_audio(caminho_audio):
