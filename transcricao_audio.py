@@ -10,6 +10,61 @@ import threading
 import wave
 import pyaudio
 
+def record_voice_sample(output_file, duration=10):
+    """Grava uma amostra de voz do usuário."""
+    recognizer = sr.Recognizer()
+    try:
+        with sr.Microphone() as source:
+            print(f"Gravando amostra de voz por {duration} segundos. Comece a falar...")
+            audio = recognizer.record(source, duration=duration)
+        
+        with open(output_file, "wb") as f:
+            f.write(audio.get_wav_data())
+        print(f"Amostra de voz gravada e salva como {output_file}")
+        return True
+    except Exception as e:
+        print(f"Erro ao gravar amostra de voz: {e}")
+        return False
+
+
+def process_audio(audio_file, source_language, target_language, output_audio, use_voice_sample, voice_sample_path=None):
+    """Processa o áudio: transcrição, tradução e geração de novo áudio."""
+    result = {
+        'transcription': '',
+        'translation': '',
+        'output_audio': output_audio
+    }
+
+    # Transcrição
+    print("\nTranscrevendo o áudio...")
+    transcribed_text = transcribe_audio(audio_file, source_language)
+    result['transcription'] = transcribed_text
+    print("\nTranscrição original:")
+    print(transcribed_text)
+    
+    # Tradução
+    if source_language != target_language:
+        print("\nTraduzindo o texto...")
+        translated_text = translate_text(transcribed_text, target_language)
+        if translated_text:
+            result['translation'] = translated_text
+            print("\nTexto traduzido:")
+            print(translated_text)
+            
+            # Gerando áudio
+            if use_voice_sample and voice_sample_path:
+                print("\nGerando áudio com voz clonada...")
+                clone_voice_and_generate_speech(translated_text, voice_sample_path, output_audio)
+            else:
+                print("Usando voz padrão do sistema...")
+                gerar_audio(translated_text, output_audio, target_language)
+        else:
+            print("Falha na tradução. O áudio não será gerado.")
+    else:
+        print("\nOs idiomas de origem e destino são os mesmos. Nenhuma tradução necessária.")
+    
+    return result
+
 def record_input_audio(output_file="audioInput.wav"):
     """Grava o áudio de entrada do usuário controlado por Enter."""
     CHUNK = 1024
@@ -140,11 +195,18 @@ def clone_voice_and_generate_speech(text, voice_sample, output_file):
         print("Usando voz padrão do sistema...")
         gerar_audio(text, output_file, 'pt')
 
-def process_audio(audio_file, source_language, target_language, output_audio, use_voice_sample):
+def process_audio(audio_file, source_language, target_language, output_audio, use_voice_sample, voice_sample_path):
     """Processa o áudio: transcrição, tradução e geração de novo áudio."""
+    result = {
+        'transcription': '',
+        'translation': '',
+        'output_audio': output_audio
+    }
+
     # Transcrição
     print("\nTranscrevendo o áudio...")
     transcribed_text = transcribe_audio(audio_file, source_language)
+    result['transcription'] = transcribed_text
     print("\nTranscrição original:")
     print(transcribed_text)
     
@@ -153,6 +215,7 @@ def process_audio(audio_file, source_language, target_language, output_audio, us
         print("\nTraduzindo o texto...")
         translated_text = translate_text(transcribed_text, target_language)
         if translated_text:
+            result['translation'] = translated_text
             print("\nTexto traduzido:")
             print(translated_text)
             
@@ -171,6 +234,8 @@ def process_audio(audio_file, source_language, target_language, output_audio, us
             print("Falha na tradução. O áudio não será gerado.")
     else:
         print("\nOs idiomas de origem e destino são os mesmos. Nenhuma tradução necessária.")
+    
+    return result
 
 def main():
     print("Bem-vindo ao sistema de transcrição, tradução e síntese de fala de áudio.")
