@@ -66,50 +66,45 @@ def process_audio(audio_file, source_language, target_language, output_audio, us
     return result
 
 def record_input_audio(output_file="audioInput.wav"):
-    """Grava o áudio de entrada do usuário controlado por Enter."""
+    """Grava o áudio de entrada do usuário."""
     CHUNK = 1024
     FORMAT = pyaudio.paInt16
     CHANNELS = 1
     RATE = 44100
-
+    
     p = pyaudio.PyAudio()
-    frames = []
-
-    def callback(in_data, frame_count, time_info, status):
-        frames.append(in_data)
-        return (in_data, pyaudio.paContinue)
-
+    
     stream = p.open(format=FORMAT,
                     channels=CHANNELS,
                     rate=RATE,
                     input=True,
-                    frames_per_buffer=CHUNK,
-                    stream_callback=callback)
+                    frames_per_buffer=CHUNK)
 
-    print("Pressione Enter para iniciar a gravação...")
-    input()
-    print("Gravação iniciada. Pressione Enter novamente para parar.")
-    
-    stream.start_stream()
-    
-    input()  # Espera o usuário pressionar Enter novamente
-    
-    stream.stop_stream()
-    stream.close()
-    p.terminate()
+    print("Iniciando gravação...")
+    frames = []
 
-    print("Gravação finalizada.")
+    try:
+        while True:
+            data = stream.read(CHUNK)
+            frames.append(data)
+    except KeyboardInterrupt:
+        print("Gravação interrompida.")
+    finally:
+        stream.stop_stream()
+        stream.close()
+        p.terminate()
 
-    # Salva o arquivo de áudio
-    wf = wave.open(output_file, 'wb')
-    wf.setnchannels(CHANNELS)
-    wf.setsampwidth(p.get_sample_size(FORMAT))
-    wf.setframerate(RATE)
-    wf.writeframes(b''.join(frames))
-    wf.close()
+        print("Gravação finalizada.")
 
-    print(f"Áudio de entrada gravado e salvo como {output_file}")
-    return output_file
+        wf = wave.open(output_file, 'wb')
+        wf.setnchannels(CHANNELS)
+        wf.setsampwidth(p.get_sample_size(FORMAT))
+        wf.setframerate(RATE)
+        wf.writeframes(b''.join(frames))
+        wf.close()
+
+        print(f"Áudio salvo como {output_file}")
+        return output_file
 
 def convert_to_wav(audio_file):
     """Converte o arquivo de áudio para WAV se necessário."""

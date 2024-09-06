@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Transcrição e Tradução de Áudio</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.rawgit.com/mattdiamond/Recorderjs/08e7abd9/dist/recorder.js"></script>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -93,6 +94,17 @@
             margin-top: 20px;
             font-size: 14px;
         }
+        #recordButton, #stopButton {
+            margin-right: 10px;
+        }
+        #stopButton {
+            background-color: #e74c3c;
+            display: none;
+        }
+        #stopButton:hover {
+            background-color: #c0392b;
+        }
+
     </style>
 </head>
 <body>
@@ -102,6 +114,7 @@
         <div class="form-group">
             <h2>Gravar Áudio</h2>
             <button id="recordButton">Gravar</button>
+            <button id="stopButton">Parar</button>
             <p id="recordStatus"></p>
         </div>
 
@@ -161,6 +174,29 @@
 
     <script>
         $(document).ready(function() {
+            function startRecording() {
+                $.post('/start_recording', function(data) {
+                    $('#recordButton').hide();
+                    $('#stopButton').show();
+                    $('#recordStatus').text('Gravando...');
+                }).fail(function(error) {
+                    $('#recordStatus').text('Erro ao iniciar a gravação: ' + error.responseJSON.error);
+                });
+            }
+
+            function stopRecording() {
+                $.post('/stop_recording', function(data) {
+                    $('#recordButton').show();
+                    $('#stopButton').hide();
+                    $('#recordStatus').text('Gravação finalizada: ' + data.file);
+                }).fail(function(error) {
+                    $('#recordStatus').text('Erro ao parar a gravação: ' + error.responseJSON.error);
+                });
+            }
+
+            $('#recordButton').click(startRecording);
+            $('#stopButton').click(stopRecording);
+
             $('#use_voice_sample').change(function() {
                 $('#voiceSampleSection').toggle(this.checked);
                 if (!this.checked) {

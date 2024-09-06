@@ -4,6 +4,7 @@ import traceback
 import logging
 from werkzeug.utils import secure_filename
 from transcricao_audio import record_input_audio, process_audio, record_voice_sample, gerar_audio
+import threading
 
 app = Flask(__name__)
 
@@ -85,6 +86,32 @@ def process():
         app.logger.error(traceback.format_exc())
         return jsonify({'error': 'An internal error occurred'}), 500
 
+@app.route('/start_recording', methods=['POST'])
+def start_recording():
+    try:
+        output_file = os.path.join(app.config['UPLOAD_FOLDER'], "user_voice.wav")
+        
+        # Inicia a gravação em uma thread separada
+        threading.Thread(target=record_input_audio, args=(output_file,)).start()
+        
+        return jsonify({'message': 'Gravação iniciada'}), 200
+    except Exception as e:
+        app.logger.error(f"Error in /start_recording: {str(e)}")
+        app.logger.error(traceback.format_exc())
+        return jsonify({'error': 'An internal error occurred'}), 500
+
+@app.route('/stop_recording', methods=['POST'])
+def stop_recording():
+    try:
+        # Aqui você precisaria implementar uma maneira de parar a gravação
+        # Por exemplo, definindo uma variável global ou usando um mecanismo de sinalização
+        
+        return jsonify({'message': 'Gravação finalizada', 'file': 'user_voice.wav'}), 200
+    except Exception as e:
+        app.logger.error(f"Error in /stop_recording: {str(e)}")
+        app.logger.error(traceback.format_exc())
+        return jsonify({'error': 'An internal error occurred'}), 500
+    
 @app.route('/record_voice_sample', methods=['POST'])
 def record_voice():
     try:
