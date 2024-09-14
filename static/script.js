@@ -2,6 +2,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const gravarBtn = document.getElementById('gravar');
     const pararBtn = document.getElementById('parar');
     const statusEl = document.getElementById('status');
+    const downloadContainer = document.getElementById('download-container');
+    const downloadBtn = document.getElementById('download');
+    const discardBtn = document.getElementById('discard');
+    const filenameEl = document.getElementById('filename');
+
+    let currentFilename = null;
 
     gravarBtn.addEventListener('click', function() {
         fetch('/iniciar_gravacao', { method: 'POST' })
@@ -10,6 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
             statusEl.textContent = data.message;
             gravarBtn.style.display = 'none';
             pararBtn.style.display = 'inline-block';
+            downloadContainer.style.display = 'none';
         })
         .catch(error => {
             console.error('Erro:', error);
@@ -24,11 +31,38 @@ document.addEventListener('DOMContentLoaded', function() {
             statusEl.textContent = data.message;
             gravarBtn.style.display = 'inline-block';
             pararBtn.style.display = 'none';
+            if (data.filename) {
+                currentFilename = data.filename;
+                filenameEl.textContent = currentFilename;
+                downloadContainer.style.display = 'block';
+            }
         })
         .catch(error => {
             console.error('Erro:', error);
             statusEl.textContent = 'Erro ao parar gravação';
         });
+    });
+
+    downloadBtn.addEventListener('click', function() {
+        if (currentFilename) {
+            window.location.href = `/download/${currentFilename}`;
+            downloadContainer.style.display = 'none';
+        }
+    });
+
+    discardBtn.addEventListener('click', function() {
+        if (currentFilename) {
+            fetch(`/descartar/${currentFilename}`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                statusEl.textContent = data.message;
+                downloadContainer.style.display = 'none';
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                statusEl.textContent = 'Erro ao descartar arquivo';
+            });
+        }
     });
 });
 $(document).ready(function() {
