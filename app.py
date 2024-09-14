@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template, send_from_directory, url_for
+from flask import Flask, request, jsonify, render_template, send_from_directory, url_for, send_file
 import os
 import traceback
 import logging
@@ -7,14 +7,17 @@ from transcricao_audio import record_input_audio, process_audio, record_voice_sa
 import threading
 import pyaudio
 import wave
+import uuid
 
-app = Flask(__name__)
+
+app = Flask(__name__, static_folder='static')
 
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'wav', 'mp3'}
 
 is_recording = False
 frames = []
+current_audio_file = None
 
 @app.route('/')
 def index():
@@ -182,14 +185,16 @@ def iniciar_gravacao():
 
 @app.route('/parar_gravacao', methods=['POST'])
 def parar_gravacao():
-    global is_recording, frames
+    global is_recording, frames, current_audio_file
     if is_recording:
         is_recording = False
         # Espera um pouco para garantir que a thread de gravação tenha terminado
         threading.Event().wait(1)
         
-        # Salva o arquivo de áudio
-        WAVE_OUTPUT_FILENAME = "gravacao.wav"
+        # Gera um nome de arquivo único
+        filename = f"gravacao_{uuid.uuid4().hex[:8]}.wav"
+        WAVE_OUTPUT_FILENAME = os.path.join(app.static_folder, filename)
+        
         wf = wave.open(WAVE_OUTPUT_FILENAME, 'wb')
         wf.setnchannels(1)
         wf.setsampwidth(pyaudio.PyAudio().get_sample_size(pyaudio.paInt16))
@@ -197,9 +202,25 @@ def parar_gravacao():
         wf.writeframes(b''.join(frames))
         wf.close()
         
-        return jsonify({"status": "success", "message": "Gravação finalizada e salva"})
+        current_audio_file = filename
+        
+        return jsonify({"status": "success", "message": "Gravação finalizada", "filename": filename})
     else:
         return jsonify({"status": "error", "message": "Nenhuma gravação em andamento"})
+    
+@app.route('/download/<filename>')
+def download_file(filename):
+    return send_file(os.path.join(app.static_folder, filename), as_attachment=True)
+
+@app.route('/descartar/<filename>', methods=['POST'])
+def descartar_arquivo(filename):
+    file_path = os.path.join(app.static_folder, filename)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        return jsonify({"status": "success", "message": "Arquivo descartado"})
+    else:
+        return jsonify({"status": "error", "message": "Arquivo não encontrado"})
+    
 if __name__ == '__main__':
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     app.run(debug=True)

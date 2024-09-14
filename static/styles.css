@@ -99,10 +99,39 @@ button:disabled {
 #recordButton, #stopButton {
     margin-right: 10px;
 }
+
 #stopButton {
     background-color: #e74c3c;
     display: none;
 }
+
 #stopButton:hover {
     background-color: #c0392b;
+}
+
+#status {
+    margin-top: 20px;
+    font-weight: bold;
+}
+
+#download-container {
+    margin-top: 20px;
+    text-align: center;
+}
+
+#discard {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 50%;
+}
+
+#discard:hover {
+    background-color: #da190b;
+}
+
+#filename {
+    margin-left: 10px;
 }
