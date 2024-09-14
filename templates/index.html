@@ -3,111 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transcrição e Tradução de Áudio</title>
+    <title>Speech Languages</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.rawgit.com/mattdiamond/Recorderjs/08e7abd9/dist/recorder.js"></script>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f0f5ff;
-        }
-        h1, h2 {
-            color: #2c3e50;
-        }
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .container {
-            background-color: #ffffff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input[type="text"], input[type="file"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-        input[type="checkbox"] {
-            margin-right: 10px;
-        }
-        button {
-            background-color: #3498db;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #2980b9;
-        }
-        button:disabled {
-            background-color: #bdc3c7;
-            cursor: not-allowed;
-        }
-        #result {
-            margin-top: 30px;
-            padding: 20px;
-            background-color: #e8f4fc;
-            border-radius: 8px;
-        }
-        #outputAudio {
-            width: 100%;
-            margin-top: 20px;
-        }
-        .download-button {
-            display: inline-block;
-            margin-top: 20px;
-            text-decoration: none;
-            background-color: #2ecc71;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 4px;
-            transition: background-color 0.3s;
-        }
-        .download-button:hover {
-            background-color: #27ae60;
-        }
-        .instructions {
-            background-color: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-            font-size: 14px;
-        }
-        #recordButton, #stopButton {
-            margin-right: 10px;
-        }
-        #stopButton {
-            background-color: #e74c3c;
-            display: none;
-        }
-        #stopButton:hover {
-            background-color: #c0392b;
-        }
-
-    </style>
 </head>
-<body>
+    <div class="logo-container">
+        <img src="{{ url_for('static', filename='language.png') }}" alt="Logo" class="logo">
+    </div>
     <div class="container">
         <h1>Transcrição e Tradução de Áudio</h1>
         
@@ -171,98 +74,6 @@
             </div>
         </div>
     </div>
-
-    <script>
-        const gravarBtn = document.getElementById('gravar');
-        const pararBtn = document.getElementById('parar');
-        const statusEl = document.getElementById('status');
-
-        gravarBtn.addEventListener('click', function() {
-            fetch('/iniciar_gravacao', { method: 'POST' })
-            .then(response => response.json())
-            .then(data => {
-                statusEl.textContent = data.message;
-                gravarBtn.style.display = 'none';
-                pararBtn.style.display = 'inline-block';
-            })
-            .catch(error => {
-                console.error('Erro:', error);
-                statusEl.textContent = 'Erro ao iniciar gravação';
-            });
-        });
-
-        pararBtn.addEventListener('click', function() {
-            fetch('/parar_gravacao', { method: 'POST' })
-            .then(response => response.json())
-            .then(data => {
-                statusEl.textContent = data.message;
-                gravarBtn.style.display = 'inline-block';
-                pararBtn.style.display = 'none';
-            })
-            .catch(error => {
-                console.error('Erro:', error);
-                statusEl.textContent = 'Erro ao parar gravação';
-            });
-        });
-        $(document).ready(function() {
-            $('#use_voice_sample').change(function() {
-                $('#voiceSampleSection').toggle(this.checked);
-                if (!this.checked) {
-                    $('#voice_sample_recorded').val('false');
-                    $('#voiceSampleStatus').text('');
-                }
-            });
-
-            $('#recordVoiceSample').click(function() {
-                $('#voiceSampleStatus').text('Gravando amostra de voz por 10 segundos. Comece a falar...');
-                $('#recordVoiceSample').prop('disabled', true);
-                
-                $.post('/record_voice_sample', function(data) {
-                    setTimeout(function() {
-                        $('#voiceSampleStatus').text('Amostra de voz gravada com sucesso');
-                        $('#voice_sample_recorded').val('true');
-                        $('#recordVoiceSample').prop('disabled', false);
-                    }, 10000); // 10 segundos
-                }).fail(function(error) {
-                    $('#voiceSampleStatus').text('Erro ao gravar amostra de voz: ' + error.responseJSON.error);
-                    $('#voice_sample_recorded').val('false');
-                    $('#recordVoiceSample').prop('disabled', false);
-                });
-            });
-
-            $('#recordButton').click(function() {
-                $.post('/record', function(data) {
-                    $('#recordStatus').text('Áudio gravado: ' + data.file);
-                }).fail(function(error) {
-                    $('#recordStatus').text('Erro ao gravar: ' + error.responseJSON.error);
-                });
-            });
-
-            $('#uploadForm').submit(function(e) {
-                e.preventDefault();
-                var formData = new FormData(this);
-                
-                formData.set('use_voice_sample', $('#use_voice_sample').is(':checked'));
-                
-                $.ajax({
-                    url: '/process',
-                    type: 'POST',
-                    data: formData,
-                    contentType: false,
-                    processData: false,
-                    success: function(data) {
-                        $('#transcription').text(data.transcription);
-                        $('#translation').text(data.translation);
-                        $('#outputAudio').attr('src', data.output_audio);
-                        $('#downloadAudio').attr('href', data.download_url);
-                        $('#result').show();
-                    },
-                    error: function(error) {
-                        alert('Erro no processamento: ' + error.responseJSON.error);
-                    }
-                });
-            });
-        });
-    </script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
