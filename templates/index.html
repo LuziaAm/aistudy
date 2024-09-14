@@ -113,9 +113,9 @@
         
         <div class="form-group">
             <h2>Gravar Áudio</h2>
-            <button id="recordButton">Gravar</button>
-            <button id="stopButton">Parar</button>
-            <p id="recordStatus"></p>
+            <button id="gravar">Gravar</button>
+            <button id="parar">Parar</button>
+            <p id="status"></p>
         </div>
 
         <form id="uploadForm">
@@ -173,30 +173,38 @@
     </div>
 
     <script>
+        const gravarBtn = document.getElementById('gravar');
+        const pararBtn = document.getElementById('parar');
+        const statusEl = document.getElementById('status');
+
+        gravarBtn.addEventListener('click', function() {
+            fetch('/iniciar_gravacao', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                statusEl.textContent = data.message;
+                gravarBtn.style.display = 'none';
+                pararBtn.style.display = 'inline-block';
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                statusEl.textContent = 'Erro ao iniciar gravação';
+            });
+        });
+
+        pararBtn.addEventListener('click', function() {
+            fetch('/parar_gravacao', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                statusEl.textContent = data.message;
+                gravarBtn.style.display = 'inline-block';
+                pararBtn.style.display = 'none';
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                statusEl.textContent = 'Erro ao parar gravação';
+            });
+        });
         $(document).ready(function() {
-            function startRecording() {
-                $.post('/start_recording', function(data) {
-                    $('#recordButton').hide();
-                    $('#stopButton').show();
-                    $('#recordStatus').text('Gravando...');
-                }).fail(function(error) {
-                    $('#recordStatus').text('Erro ao iniciar a gravação: ' + error.responseJSON.error);
-                });
-            }
-
-            function stopRecording() {
-                $.post('/stop_recording', function(data) {
-                    $('#recordButton').show();
-                    $('#stopButton').hide();
-                    $('#recordStatus').text('Gravação finalizada: ' + data.file);
-                }).fail(function(error) {
-                    $('#recordStatus').text('Erro ao parar a gravação: ' + error.responseJSON.error);
-                });
-            }
-
-            $('#recordButton').click(startRecording);
-            $('#stopButton').click(stopRecording);
-
             $('#use_voice_sample').change(function() {
                 $('#voiceSampleSection').toggle(this.checked);
                 if (!this.checked) {

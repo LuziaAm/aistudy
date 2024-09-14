@@ -5,11 +5,46 @@ import logging
 from werkzeug.utils import secure_filename
 from transcricao_audio import record_input_audio, process_audio, record_voice_sample, gerar_audio
 import threading
+import pyaudio
+import wave
 
 app = Flask(__name__)
 
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'wav', 'mp3'}
+
+is_recording = False
+frames = []
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+def audio_recording():
+    global is_recording, frames
+    CHUNK = 1024
+    FORMAT = pyaudio.paInt16
+    CHANNELS = 1
+    RATE = 44100
+
+    p = pyaudio.PyAudio()
+
+    stream = p.open(format=FORMAT,
+                    channels=CHANNELS,
+                    rate=RATE,
+                    input=True,
+                    frames_per_buffer=CHUNK)
+
+    frames = []
+
+    while is_recording:
+        data = stream.read(CHUNK)
+        frames.append(data)
+
+    stream.stop_stream()
+    stream.close()
+    p.terminate()
+
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -20,9 +55,6 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.route('/')
-def index():
-    return render_template('index.html')
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
@@ -138,6 +170,36 @@ def record():
         app.logger.error(traceback.format_exc())
         return jsonify({'error': 'An internal error occurred'}), 500
 
+@app.route('/iniciar_gravacao', methods=['POST'])
+def iniciar_gravacao():
+    global is_recording
+    if not is_recording:
+        is_recording = True
+        threading.Thread(target=audio_recording).start()
+        return jsonify({"status": "success", "message": "Gravação iniciada"})
+    else:
+        return jsonify({"status": "error", "message": "Gravação já em andamento"})
+
+@app.route('/parar_gravacao', methods=['POST'])
+def parar_gravacao():
+    global is_recording, frames
+    if is_recording:
+        is_recording = False
+        # Espera um pouco para garantir que a thread de gravação tenha terminado
+        threading.Event().wait(1)
+        
+        # Salva o arquivo de áudio
+        WAVE_OUTPUT_FILENAME = "gravacao.wav"
+        wf = wave.open(WAVE_OUTPUT_FILENAME, 'wb')
+        wf.setnchannels(1)
+        wf.setsampwidth(pyaudio.PyAudio().get_sample_size(pyaudio.paInt16))
+        wf.setframerate(44100)
+        wf.writeframes(b''.join(frames))
+        wf.close()
+        
+        return jsonify({"status": "success", "message": "Gravação finalizada e salva"})
+    else:
+        return jsonify({"status": "error", "message": "Nenhuma gravação em andamento"})
 if __name__ == '__main__':
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     app.run(debug=True)
