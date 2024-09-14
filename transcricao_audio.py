@@ -65,7 +65,7 @@ def process_audio(audio_file, source_language, target_language, output_audio, us
     
     return result
 
-def record_input_audio(output_file="audioInput.wav"):
+def record_input_audio(output_file):
     """Grava o áudio de entrada do usuário."""
     CHUNK = 1024
     FORMAT = pyaudio.paInt16
