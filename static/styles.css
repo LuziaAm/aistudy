@@ -7,6 +7,17 @@ body {
     padding: 20px;
     background-color: #f0f5ff;
 }
+.logo-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.logo {
+    max-width: 120px;  /* Ajuste este valor conforme o tamanho da sua logo */
+    height: auto;
+}
 h1, h2 {
     color: #2c3e50;
 }

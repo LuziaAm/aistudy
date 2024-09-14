@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transcrição e Tradução de Áudio</title>
+    <title>Speech Languages</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.rawgit.com/mattdiamond/Recorderjs/08e7abd9/dist/recorder.js"></script>
 </head>
-<body>
+    <div class="logo-container">
+        <img src="{{ url_for('static', filename='language.png') }}" alt="Logo" class="logo">
+    </div>
     <div class="container">
         <h1>Transcrição e Tradução de Áudio</h1>
         
