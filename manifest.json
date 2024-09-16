@@ -1,0 +1,10 @@
+{
+    "manifest_version": 3,
+    "name": "Speech Languages",
+    "description": "Transcrição e Tradução de Áudio",
+    "version": "1.0",
+    "action": {
+      "default_popup": "/home/luzia-tpv/Documentos/Estudos/aistudy/templates/index.html",
+      "default_icon": "/home/luzia-tpv/Documentos/Estudos/aistudy/static/language.png"
+    }
+  }
