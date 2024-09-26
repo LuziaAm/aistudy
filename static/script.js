@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const downloadBtn = document.getElementById('download');
     const discardBtn = document.getElementById('discard');
     const filenameEl = document.getElementById('filename');
+    const textInput = document.getElementById('textInput');
 
     let currentFilename = null;
 
@@ -64,6 +65,28 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
+    uploadForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        
+        // Adiciona o texto do textInput ao formData
+        formData.append('text', textInput.value);
+        
+        fetch('/process', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            outputAudio.src = data.output_audio;
+            downloadAudio.href = data.download_url;
+            textInput.value;
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro no processamento: ' + error.message);
+        });
+    });
 });
 $(document).ready(function() {
     $('#use_voice_sample').change(function() {
@@ -75,7 +98,7 @@ $(document).ready(function() {
     });
 
     $('#recordVoiceSample').click(function() {
-        $('#voiceSampleStatus').text('Gravando amostra de voz por 10 segundos. Comece a falar...');
+        $('#voiceSampleStatus').text('Gravando amostra de voz por 20 segundos. Comece a falar...');
         $('#recordVoiceSample').prop('disabled', true);
         
         $.post('/record_voice_sample', function(data) {
@@ -83,7 +106,7 @@ $(document).ready(function() {
                 $('#voiceSampleStatus').text('Amostra de voz gravada com sucesso');
                 $('#voice_sample_recorded').val('true');
                 $('#recordVoiceSample').prop('disabled', false);
-            }, 10000); // 10 segundos
+            }, 20000); // 20 segundos
         }).fail(function(error) {
             $('#voiceSampleStatus').text('Erro ao gravar amostra de voz: ' + error.responseJSON.error);
             $('#voice_sample_recorded').val('false');
@@ -123,4 +146,48 @@ $(document).ready(function() {
             }
         });
     });
+});
+
+let translationText = '';
+
+document.getElementById("translateButton").addEventListener("click", function() {
+    const text = document.getElementById("text").value;
+    const formData = new FormData();
+    formData.append("text", text);
+
+    fetch("/processtxt", {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            document.getElementById("message").textContent = data.error;
+        } else {
+            document.getElementById("translationResult").textContent = "Tradução: " + data.translation;
+            translationText = data.translation;
+            document.getElementById("downloadButton").disabled = false; // Habilitar o botão de download
+        }
+    })
+    .catch(error => console.error("Erro:", error));
+});
+
+document.getElementById("downloadButton").addEventListener("click", function() {
+    const formData = new FormData();
+    formData.append("translation", translationText);
+
+    fetch("/download_audio", {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.blob())
+    .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "translation.mp3";
+        a.click();
+        window.URL.revokeObjectURL(url);
+    })
+    .catch(error => console.error("Erro:", error));
 });
