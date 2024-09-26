@@ -135,3 +135,26 @@ button:disabled {
 #filename {
     margin-left: 10px;
 }
+.or-separator {
+    text-align: center;
+    font-weight: bold;
+    margin: 20px 0;
+    text-transform: uppercase;
+}
+#textInputSection {
+    margin-top: 20px;
+}
+
+#textInputSection h2 {
+    margin-bottom: 10px;
+}
+#text {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: 2px solid #3498db;
+    border-radius: 10px;
+    font-size: 16px;
+    resize: vertical;
+    min-height: 100px;
+}

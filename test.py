@@ -100,8 +100,9 @@ def clone_voice(voice_sample):
 
 
 # arquivo_amostra = gravar_amostra_voz()
+# print(arquivo_amostra)
 
-text = "Note that the server is not optimized for performance but gives you an easy way to interact with the models"
+text = "I'm here right now making a YouTube video for you with lots of love and affection, right? So let's start this journey towards learning software development, right? And I think every little detail will make a big difference. Thank you all, and let's go there"
 
 # tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2", gpu=True)
 
@@ -130,4 +131,4 @@ tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
 # Run TTS
 # ❗ Since this model is multi-lingual voice cloning model, we must set the target speaker_wav and language
 # Text to speech to a file
-tts.tts_to_file(text=text, speaker_wav="/home/luzia-tpv/Documentos/Estudos/aistudy/amostra_voz_1726797442.wav", language="en", file_path="output.wav")
+tts.tts_to_file(text=text, speaker_wav="/home/luzia-tpv/Documentos/Estudos/aistudy/amostra_voz_1726968409.wav", language="en", file_path="output.wav")

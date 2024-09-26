@@ -14,6 +14,18 @@
     <div class="container">
         <h1>Talk In</h1>
         <h4>Transcrição e Tradução de Áudio</h4>
+        <form id="translationForm">
+            <h2>Inserir Texto</h2>
+            <textarea id="text" rows="4" maxlength="200" placeholder="Digite seu texto aqui (máximo 200 caracteres)"></textarea>
+            <button type="button" id="translateButton">Traduzir</button>
+            <button type="button" id="downloadButton" disabled>Baixar Áudio</button>
+            <p id="charCount">0 / 200</p>
+        </form>
+        <div id="translationResult"></div>
+        <div id="message"></div>
+
+        <p class="or-separator">ou</p>
+
         <div class="instructions">
             <h3>Dicas para ter uma boa gravação de áudio</h3>
             <ol>
@@ -89,6 +101,6 @@
             </div>
         </div>
     </div>
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script src="/static/script.js"></script>
 </body>
 </html>

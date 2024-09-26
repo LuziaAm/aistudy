@@ -1,0 +1,77 @@
+<!-- verify.html -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificar Código</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 {
+            color: #1877f2;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        p {
+            color: #606770;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-bottom: 0.5rem;
+            color: #606770;
+        }
+        input {
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #dddfe2;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        button {
+            background-color: #1877f2;
+            color: white;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #166fe5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Verificar Código</h1>
+        <p>Um código de verificação foi enviado para o seu e-mail.</p>
+        <form method="POST">
+            <label for="code">Código de verificação:</label>
+            <input type="text" id="code" name="code" required>
+            <button type="submit">Verificar</button>
+        </form>
+    </div>
+</body>
+</html>

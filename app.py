@@ -8,6 +8,9 @@ import threading
 import pyaudio
 import wave
 import uuid
+import speech_recognition as sr
+from googletrans import Translator
+from gtts import gTTS
 
 
 app = Flask(__name__, static_folder='static')
@@ -18,6 +21,10 @@ ALLOWED_EXTENSIONS = {'wav', 'mp3'}
 is_recording = False
 frames = []
 current_audio_file = None
+
+audio_dir = UPLOAD_FOLDER
+if not os.path.exists(audio_dir):
+    os.makedirs(audio_dir)
 
 @app.route('/')
 def index():
@@ -62,6 +69,33 @@ def allowed_file(filename):
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
+
+@app.route('/processtxt', methods=['POST'])
+def process_text():
+    text = request.form['text']
+    
+    # Verificar o tamanho do texto
+    if len(text) > 200:
+        return jsonify({'error': 'O texto deve ter no máximo 200 caracteres.'})
+
+    # Traduzir o texto
+    translator = Translator()
+    translation = translator.translate(text, src='pt', dest='en').text
+
+    # Retorna a tradução
+    return jsonify({'translation': translation})
+
+@app.route('/download_audio', methods=['POST'])
+def download_audio():
+    translation = request.form['translation']
+    
+    # Gerar o áudio com a tradução
+    tts = gTTS(translation, lang='en')
+    fileaudio = f"translation_{uuid.uuid4().hex[:8]}.wav"
+    audio_file = os.path.join(audio_dir, fileaudio)
+    tts.save(audio_file)
+
+    return send_file(audio_file, as_attachment=True)
 
 @app.route('/process', methods=['POST'])
 def process():
@@ -120,6 +154,7 @@ def process():
         app.logger.error(f"Error in /process: {str(e)}")
         app.logger.error(traceback.format_exc())
         return jsonify({'error': 'An internal error occurred'}), 500
+
 
 @app.route('/start_recording', methods=['POST'])
 def start_recording():
